@@ -1,0 +1,31 @@
+# Local metadata and developer tools are not needed to build Ghostty.
+.git
+.codegraph
+.vscode
+.direnv
+.envrc.local
+.flatpak-builder
+
+# Build outputs and caches must not be copied back into the build context.
+**/.zig-cache
+**/zig-cache
+**/zig-out
+**/zig-pkg
+build-cmake
+CMakeCache.txt
+CMakeFiles
+result*
+flatpak/builddir
+flatpak/repo
+ghostty-output
+
+# Local editor and test artifacts.
+**/*~
+**/.*.swp
+**/.swp
+**/*.log
+**/.DS_Store
+test/cases/**/*.actual.png
+test/ghostty
+example/*.wasm
+ghostty.qcow2
