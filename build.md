@@ -1,29 +1,22 @@
 # Build and install Ghostty with Docker
 
-This Dockerfile builds Ghostty for an **Ubuntu 26.04** host without installing
-Zig on the host. Run these commands from the repository root on a host with
-Docker Buildx available. The host still needs Ghostty's GTK runtime libraries.
+This Dockerfile builds a Ghostty Debian package for an **Ubuntu 26.04** host
+without installing Zig on the host. Run this command from the repository root
+on a host with Docker Buildx available.
 
 ```sh
 docker buildx build --target artifact --output type=local,dest=ghostty-output .
 ```
 
-The exported installation is under `ghostty-output/usr/local`. Install it for
-the current user (no `sudo` required):
-
-On a `vX.Y.Z` tag push, the Ubuntu 26.04 release workflow also attaches
-`ghostty-vX.Y.Z-ubuntu-26.04-x86_64.tar.gz` to the GitHub Release. Extract it
-to obtain the same `usr/local` installation tree as `ghostty-output` above.
+The exported package is `ghostty-output/ghostty.deb`. Install it on Ubuntu 26.04
+with its runtime dependencies:
 
 ```sh
-install -Dm755 ghostty-output/usr/local/bin/ghostty "$HOME/.local/bin/ghostty"
-mkdir -p "$HOME/.local/share"
-# Includes ~/.local/share/ghostty, the generated desktop file, icons,
-# D-Bus service, and other desktop integration files.
-cp -a ghostty-output/usr/local/share/. "$HOME/.local/share/"
+sudo apt install ./ghostty-output/ghostty.deb
 ```
 
-The desktop file is now at
-`~/.local/share/applications/com.mitchellh.ghostty.desktop`. Ensure
-`~/.local/bin` is on your `PATH` so its `Exec=ghostty` command works. Log out
-and back in if your desktop does not show the launcher immediately.
+On a `vX.Y.Z` tag push, the Ubuntu 26.04 release workflow also attaches
+`ghostty-vX.Y.Z-ubuntu-26.04-x86_64.deb` to the GitHub Release. Download it and
+install it with `sudo apt install ./ghostty-vX.Y.Z-ubuntu-26.04-x86_64.deb`.
+The package installs under `/usr/local`, including the desktop integration
+files. Log out and back in if your desktop does not show the launcher immediately.

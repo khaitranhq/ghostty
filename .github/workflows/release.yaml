@@ -31,17 +31,17 @@ jobs:
       - name: Build Ubuntu 26.04 installation
         run: docker buildx build --target artifact --output type=local,dest=ghostty-output .
 
-      - name: Package installation
+      - name: Name Debian package
         env:
           TAG_NAME: ${{ github.ref_name }}
         run: |
-          tar -C ghostty-output -czf "ghostty-${TAG_NAME}-ubuntu-26.04-x86_64.tar.gz" usr/local
+          mv ghostty-output/ghostty.deb "ghostty-${TAG_NAME}-ubuntu-26.04-x86_64.deb"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ubuntu-26-${{ github.run_id }}
-          path: ghostty-*-ubuntu-26.04-x86_64.tar.gz
+          path: ghostty-*-ubuntu-26.04-x86_64.deb
           if-no-files-found: error
 
   release:
@@ -62,7 +62,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           TAG_NAME: ${{ github.ref_name }}
         run: |
-          asset="ghostty-${TAG_NAME}-ubuntu-26.04-x86_64.tar.gz"
+          asset="ghostty-${TAG_NAME}-ubuntu-26.04-x86_64.deb"
           if gh release view "$TAG_NAME" >/dev/null 2>&1; then
             gh release upload "$TAG_NAME" "$asset"
           else
