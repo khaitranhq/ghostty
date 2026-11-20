@@ -11,6 +11,10 @@ docker buildx build --target artifact --output type=local,dest=ghostty-output .
 The exported installation is under `ghostty-output/usr/local`. Install it for
 the current user (no `sudo` required):
 
+On a `vX.Y.Z` tag push, the Ubuntu 26.04 release workflow also attaches
+`ghostty-vX.Y.Z-ubuntu-26.04-x86_64.tar.gz` to the GitHub Release. Extract it
+to obtain the same `usr/local` installation tree as `ghostty-output` above.
+
 ```sh
 install -Dm755 ghostty-output/usr/local/bin/ghostty "$HOME/.local/bin/ghostty"
 mkdir -p "$HOME/.local/share"

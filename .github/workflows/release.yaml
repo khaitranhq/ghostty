@@ -1,0 +1,70 @@
+name: Release Ubuntu 26.04
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    steps:
+      - name: Validate release tag
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          if [[ ! "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Expected a vX.Y.Z tag" >&2
+            exit 1
+          fi
+
+      - name: Checkout tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build Ubuntu 26.04 installation
+        run: docker buildx build --target artifact --output type=local,dest=ghostty-output .
+
+      - name: Package installation
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          tar -C ghostty-output -czf "ghostty-${TAG_NAME}-ubuntu-26.04-x86_64.tar.gz" usr/local
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ubuntu-26-${{ github.run_id }}
+          path: ghostty-*-ubuntu-26.04-x86_64.tar.gz
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ubuntu-26-${{ github.run_id }}
+
+      - name: Publish GitHub Release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          asset="ghostty-${TAG_NAME}-ubuntu-26.04-x86_64.tar.gz"
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            gh release upload "$TAG_NAME" "$asset"
+          else
+            gh release create "$TAG_NAME" "$asset" --verify-tag --generate-notes
+          fi
